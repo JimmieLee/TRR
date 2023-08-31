@@ -48,6 +48,18 @@ protected:
 	// 捞悼 涝仿 贸府
 	void Move(const FInputActionValue& Value);
 
+	// 矫急 涝仿 贸府
+	void Lookup(const FInputActionValue& Value);
+
+	// 痢橇 咀记 贸府.
+	void Jump();
+
+	// 旷农府扁 咀记 贸府.
+	void Crouch();
+
+	// 龙林 咀记 贸府.
+	void Sprint();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

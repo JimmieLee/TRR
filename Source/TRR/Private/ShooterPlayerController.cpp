@@ -18,8 +18,7 @@ void AShooterPlayerController::BeginPlay()
 {
 	// 기본 클래스를 호출
 	Super::BeginPlay();
-
-	
+		
 	// 입력 매핑 컨텍스트를 추가.
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
