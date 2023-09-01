@@ -11,6 +11,7 @@
 // 클래스 선언
 class UInputMappingContext;
 class UInputAction;
+class UFloatCurve;
 
 /**
 * Terminator Re-Rampage Project

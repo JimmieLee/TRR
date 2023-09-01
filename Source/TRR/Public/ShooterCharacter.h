@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CharacterProperties.h"
 
 // 향상된 입력 포함.
 #include "InputActionValue.h"
@@ -20,6 +21,7 @@
 // 클래스 선언
 class USkeletalMeshComponent;
 class UCameraComponent;
+class AShooterPlayerController;
 
 UCLASS()
 class TRR_API AShooterCharacter : public ACharacter
@@ -31,15 +33,28 @@ public:
 	AShooterCharacter();
 
 private:
-	/** 컴포넌트 선언 */
+	/** 컴포넌트 */
 	// 플레이 카메라 컴포넌트 (cpp에서 생성)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* ShooterCamera;
 
 	// 1인칭 스켈렉탈 메시 컴포넌트 (cpp에서 생성)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Component, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* ShooterMesh;
 
+	/** 캐릭터 액션 */
+	// 캐릭터 액션 상태 (기본 값은 IDLE)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	ECharacterActionState ActionState = ECharacterActionState::ECAS_IDLE;	
+
+	// 점프 시간 (점프 커브의 길이와 비교)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float JumpingTime;
+
+	/** 캐릭터 컨트롤러 */
+	// 플레이어 컨트롤러
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller", meta = (AllowPrivateAccess = "true"))
+	AShooterPlayerController* PlayerController;
 
 protected:
 	// Called when the game starts or when spawned
@@ -51,15 +66,18 @@ protected:
 	// 시선 입력 처리
 	void Lookup(const FInputActionValue& Value);
 
-	// 점프 액션 처리.
-	void Jump();
+	// 점프 액션 입력 처리.
+	void BeginJump();
 
-	// 웅크리기 액션 처리.
-	void Crouch();
+	// 점프 액션 종료 처리.
+	void EndJump();
 
-	// 질주 액션 처리.
-	void Sprint();
+	// 웅크리기 액션 입력 처리.
+	void Crouching();
 
+	// 질주 액션 입력 처리.
+	void Sprint();		
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

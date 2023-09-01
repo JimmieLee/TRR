@@ -7,6 +7,12 @@
 // 컴포넌트 클래스 포함.
 #include "Camera/CameraComponent.h"
 
+// 게임 프레임웍스 포함.
+#include "GameFramework/CharacterMovementComponent.h"
+
+// 곡선 포함.
+#include "Curves/CurveFloat.h"
+
 // 향상된 입력 포함.
 #include "EnhancedInputComponent.h"
 
@@ -16,6 +22,7 @@
 * 플레이어가 제어하는 캐릭터 클래스의 CPP
 */
 
+/** 클래스 생성자 */
 // Sets default values
 AShooterCharacter::AShooterCharacter()
 {
@@ -48,17 +55,19 @@ AShooterCharacter::AShooterCharacter()
 	// 클래스가 Controller의 Yaw 회전을 사용하도록 설정.
 	this->bUseControllerRotationPitch = false;
 	this->bUseControllerRotationYaw = true;
-	this->bUseControllerRotationRoll = false;
+	this->bUseControllerRotationRoll = false;	
 }
+
 
 /** 게임 시작 처리 */
 // Called when the game starts or when spawned
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-}
 
+	// Shooter Player Controller에 접근하기 위해 Controller를 형변환.
+	PlayerController = Cast<AShooterPlayerController>(GetController());
+}
 
 /** 캐릭터 제어 입력 처리 */
 // 플레이어의 입력에 따라 캐릭터의 이동 방향을 설정.
@@ -68,18 +77,6 @@ void AShooterCharacter::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		/*
-		// 컨트롤러의 회전 중, Yaw 회전만 적용된 새로운 회전자를 생성.
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// 전면 벡터를 구한다.
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		// 측면 벡터를 구한다.
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		*/
-
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}	
@@ -98,20 +95,43 @@ void AShooterCharacter::Lookup(const FInputActionValue& Value)
 }
 
 // 플레이어의 입력에 의해 점프 실행.
-void AShooterCharacter::Jump()
+void AShooterCharacter::BeginJump()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Jump"));
+	// 캐릭터가 Jump 상태가 아니고, 공중에 떠 있지 않다면,
+	// 액션 상태를 JUMP로 변경하고 점프를 실행한다.
+	if (ActionState != ECharacterActionState::ECAS_JUMP && !GetCharacterMovement()->IsFalling())
+	{
+		ActionState = ECharacterActionState::ECAS_JUMP;
+		Jump();
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Action State: %d"), ActionState);
+}
+
+void AShooterCharacter::EndJump()
+{
+	// 점프를 중지하고, 액션 상태를 IDLE로 변경한다.	
+	StopJumping();
+	ActionState = ECharacterActionState::ECAS_IDLE;
+
+	UE_LOG(LogTemp, Warning, TEXT("Action State: %d"), ActionState);
 }
 
 // 플레이어의 입력에 의해 웅크리기 실행/ 해제
-void AShooterCharacter::Crouch()
+void AShooterCharacter::Crouching()
 {
+	// 캐릭터의 액션 상태를 CROUCH로 변경.
+	ActionState = ECharacterActionState::ECAS_CROUCH;
+
 	UE_LOG(LogTemp, Warning, TEXT("Crouch"));
 }
 
 // 플레이어의 입력 유지에 의해 질주 실행/ 해제.
 void AShooterCharacter::Sprint()
 {
+	// 캐릭터의 액션 상태를 SPRINT로 변경.
+	ActionState = ECharacterActionState::ECAS_SPRINT;
+	
 	UE_LOG(LogTemp, Warning, TEXT("Sprint"));
 }
 
@@ -124,49 +144,57 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 }
 
-
 // Called to bind functionality to input
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent(PlayerInputComponent);	
 
-	
 	// Shooter Player Controller에 접근하기 위해 Controller를 형변환.
-	AShooterPlayerController* PlayerController = Cast<AShooterPlayerController>(GetController());
-	if (PlayerController)
+	AShooterPlayerController* ShooterController = Cast<AShooterPlayerController>(GetController());
+	
+	if (ShooterController)
 	{
-		// Shooter Player Controller가 유효하면, PlayerInputComponent를 향상된 입력 컴포넌트로 형변환.
-
+		// 플레이어 입력 컴포넌트를 향상된 입력 컴포넌트로 형변환하여, 향상된 입력 액션을 바인딩한다.
 		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
-		if (EnhancedInputComponent)
+		if (EnhancedInputComponent)		
 		{
-			// 향상된 입력 컴포넌트가 유효하면,
+			// 이동 입력
 			EnhancedInputComponent->BindAction(
-				PlayerController->GetMoveAction(), 
+				ShooterController->GetMoveAction(),
 				ETriggerEvent::Triggered, 
 				this, 
 				&AShooterCharacter::Move);
-
+			
+			// 시선 입력
 			EnhancedInputComponent->BindAction(
-				PlayerController->GetLookupAction(), 
+				ShooterController->GetLookupAction(),
 				ETriggerEvent::Triggered, 
 				this, 
 				&AShooterCharacter::Lookup);
 
+			// Jump 액션 입력
 			EnhancedInputComponent->BindAction(
-				PlayerController->GetJumpAction(),
+				ShooterController->GetJumpAction(),
 				ETriggerEvent::Triggered,
 				this,
-				&AShooterCharacter::Jump);
-
+				&AShooterCharacter::BeginJump);
+			
 			EnhancedInputComponent->BindAction(
-				PlayerController->GetCrouchAction(),
+				ShooterController->GetJumpAction(),
+				ETriggerEvent::Completed,
+				this,
+				&AShooterCharacter::EndJump);			
+
+			// 웅크리기 액션 입력
+			EnhancedInputComponent->BindAction(
+				ShooterController->GetCrouchAction(),
 				ETriggerEvent::Triggered,
 				this,
-				&AShooterCharacter::Crouch);
+				&AShooterCharacter::Crouching);
 
+			// 질주 액션 입력
 			EnhancedInputComponent->BindAction(
-				PlayerController->GetSprintAction(),
+				ShooterController->GetSprintAction(),
 				ETriggerEvent::Ongoing,
 				this,
 				&AShooterCharacter::Sprint);
