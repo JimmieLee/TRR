@@ -5,9 +5,9 @@
 #include "ShooterCharacter.h"
 
 /*
-* Terminator Re-Rampage Project
-* 2023. 09 .01
-* 플레이어 캐릭터의 애니메이션 정보 클래스 CPP
+ * Terminator Re-Rampage Project
+ * 2023. 09 .01
+ * 플레이어 캐릭터의 애니메이션 정보 클래스의 CPP
 */
 
 UShooterPlayerAnimInstance::UShooterPlayerAnimInstance()

@@ -13,9 +13,9 @@
 #include "ShooterCharacter.generated.h"
 
 /*
-* Terminator Re-Rampage Project
-* 2023. 08. 29
-* 플레이어가 제어하는 캐릭터 클래스의 헤더
+ * Terminator Re-Rampage Project
+ * 2023. 08. 29
+ * 플레이어가 제어하는 캐릭터 클래스의 헤더
 */
 
 // 클래스 선언
@@ -51,6 +51,18 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
 	float JumpingTime;
 
+	// 캐릭터의 캡슐 컴포넌트 기본 높이.
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float CapsuleHalfHeight;	
+		
+	// Stand 상태에서의 카메라 기본 위치.
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	FVector ShooterCameraPosition = FVector(0.0f, 0.0f, 0.0f);
+
+	// Crouch 상태에서의 카메라 높이.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float CrouhedCameraHeight = 25.0f;
+
 	/** 캐릭터 컨트롤러 */
 	// 플레이어 컨트롤러
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller", meta = (AllowPrivateAccess = "true"))
@@ -59,6 +71,9 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Crouch 상태 변화에 따른 카메라 높이의 전환.
+	void ExecuteCrouch(float DeltaTime);		
 
 	// 이동 입력 처리
 	void Move(const FInputActionValue& Value);
@@ -72,13 +87,17 @@ protected:
 	// 점프 액션 종료 처리.
 	void EndJump();
 
-	// 웅크리기 액션 입력 처리.
-	void Crouching();
+	// 웅크리기 실행 여부에 액션 상태 처리.
+	void ChangeActionByCrouch();
 
 	// 질주 액션 입력 처리.
 	void Sprint();		
 	
 public:	
+	// 외부클래스에서 접근할 수 있는 멤버 변수 인라인 함수.
+	FORCEINLINE UCameraComponent* GetShooterCamera() const { return ShooterCamera; }
+	FORCEINLINE ECharacterActionState GetActionState() const { return ActionState; }
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
