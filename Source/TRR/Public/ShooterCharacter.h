@@ -63,6 +63,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
 	float CrouhedCameraHeight = 25.0f;
 
+	// 캐릭터의 기본 최대 이동 속도.
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float MaxMoveSpeed = 0.0f;
+
+	// 캐릭터의 최대 지구력 포인트
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float Stamina = 100.0f;
+
 	/** 캐릭터 컨트롤러 */
 	// 플레이어 컨트롤러
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller", meta = (AllowPrivateAccess = "true"))
@@ -91,7 +99,10 @@ protected:
 	void ChangeActionByCrouch();
 
 	// 질주 액션 입력 처리.
-	void Sprint();		
+	void BeginSprint();		
+
+	// 질주 액션 종료 처리.
+	void EndSprint();
 	
 public:	
 	// 외부클래스에서 접근할 수 있는 멤버 변수 인라인 함수.

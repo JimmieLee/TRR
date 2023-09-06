@@ -54,7 +54,7 @@ AShooterCharacter::AShooterCharacter()
 		ShooterMesh->SetRelativeLocation(FVector(-10.0f, -10.0f, -150.0f));
 	}
 
-	/** 캐릭터 파라미터 설정 */
+	/** 클래스 파라미터 설정 */
 	// 캐릭터가 Controller의 Yaw 회전을 사용하도록 설정.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
@@ -68,7 +68,11 @@ AShooterCharacter::AShooterCharacter()
 
 	// 캐릭터의 기본 위치 저장. (Crouch 상태가 해제되면, 복원 용도로 사용)
 	ShooterCameraPosition = ShooterCamera->GetRelativeLocation();
+
+	// 캐릭터의 최대 이동 속도 저장. (Sprint 상태가 해제되면, 복원 용도로 사용)
+	MaxMoveSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
+
 
 /** 게임 시작 처리 */
 // Called when the game starts or when spawned
@@ -80,15 +84,16 @@ void AShooterCharacter::BeginPlay()
 	PlayerController = Cast<AShooterPlayerController>(GetController());
 }
 
+
 /** 캐릭터 액션 처리 */
-// Crouch 상태를 처리 (프레임 검색)
+// Crouch 상태를 처리 (프레임마다 체크하기 위해 Tick()에서 호출)
 void AShooterCharacter::ExecuteCrouch(float DeltaTime)
 {
 	if (ActionState == ECharacterActionState::ECAS_CROUCH)
 	{
 		// 캐릭터 상태가 Crouch라면
 		// 현재 캐릭터의 Z축 높이부터 CharacterCrouchHeight까지
-		// 0.25초간 매 프레임마다 높이 값을 구한다.
+		// 일정 시간 동안 매 프레임마다 높이 값을 구한다.
 		float InterpingCrouchHeight = FMath::FInterpTo(
 			ShooterCamera->GetRelativeLocation().Z,
 			CrouhedCameraHeight,
@@ -105,7 +110,7 @@ void AShooterCharacter::ExecuteCrouch(float DeltaTime)
 	{
 		// 캐릭터 상태가 Crouch라면
 		// 현재 캐릭터의 Z축 높이부터 Character Stand Position의 Z축 위치까지
-		// 0.25초간 매 프레임마다 높이 값을 구한다.
+		// 일정 시간 동안 매 프레임마다 높이 값을 구한다.
 		float InterpingCrouchHeight = FMath::FInterpTo(
 			ShooterCamera->GetRelativeLocation().Z,
 			ShooterCameraPosition.Z,
@@ -180,7 +185,7 @@ void AShooterCharacter::ChangeActionByCrouch()
 	}
 	else
 	{
-		// 캐릭터 캡슐 컴포넌트의 크기를 복구.
+		// 캐릭터 캡슐 컴포넌트의 크기를 복원.
 		GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHalfHeight);
 
 		// 캐릭터가 웅크리기 상태인 경우, 대기 상태로 전환.
@@ -188,13 +193,24 @@ void AShooterCharacter::ChangeActionByCrouch()
 	}	
 }
 
-// 플레이어의 입력 유지에 의해 질주 실행/ 해제.
-void AShooterCharacter::Sprint()
+// 질주 입력 유지에 의해 액션 실행.
+void AShooterCharacter::BeginSprint()
 {
 	// 캐릭터의 액션 상태를 SPRINT로 변경.
 	ActionState = ECharacterActionState::ECAS_SPRINT;
-	
-	UE_LOG(LogTemp, Warning, TEXT("Sprint"));
+
+	// 캐릭터의 최대 이동 속도 증가.
+	GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed * 1.75f;
+}
+
+// 질주 입력 해제에 의해 액션 종료.
+void AShooterCharacter::EndSprint()
+{
+	// 캐릭터의 액션 상태를 IDLE로 변경.
+	ActionState = ECharacterActionState::ECAS_IDLE;
+
+	// 캐릭터의 최대 이동 속도 복원.
+	GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
 }
 
 
@@ -208,6 +224,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 	ExecuteCrouch(DeltaTime);
 }
 
+
+/** 게임 입력 바인딩*/
 // Called to bind functionality to input
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -254,14 +272,20 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 				ShooterController->GetCrouchAction(),
 				ETriggerEvent::Triggered,
 				this,
-				&AShooterCharacter::Crouching);
+				&AShooterCharacter::ChangeActionByCrouch);
 
 			// 질주 액션 입력
 			EnhancedInputComponent->BindAction(
 				ShooterController->GetSprintAction(),
 				ETriggerEvent::Ongoing,
 				this,
-				&AShooterCharacter::Sprint);
+				&AShooterCharacter::BeginSprint);
+
+			EnhancedInputComponent->BindAction(
+				ShooterController->GetSprintAction(),
+				ETriggerEvent::Completed,
+				this,
+				&AShooterCharacter::EndSprint);
 		}
 	}
 }
