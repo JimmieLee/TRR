@@ -24,6 +24,9 @@
  * 플레이어가 제어하는 캐릭터 클래스의 CPP
 */
 
+
+#pragma region Constructor
+
 /** 클래스 생성자 */
 // Sets default values
 AShooterCharacter::AShooterCharacter()
@@ -51,7 +54,7 @@ AShooterCharacter::AShooterCharacter()
 		// Shooter Mesh가 유효하면, Shooter Camera 하위에 등록.
 		// Shooter Mesh의 위치(Lcoation)을 조정.
 		ShooterMesh->SetupAttachment(ShooterCamera);
-		ShooterMesh->SetRelativeLocation(FVector(-10.0f, -10.0f, -150.0f));
+		ShooterMesh->SetRelativeLocation(FVector(0.0f, -10.0f, -165.0f));
 	}
 
 	/** 클래스 파라미터 설정 */
@@ -72,7 +75,7 @@ AShooterCharacter::AShooterCharacter()
 	// 캐릭터의 최대 이동 속도 저장. (Sprint 상태가 해제되면, 복원 용도로 사용)
 	MaxMoveSpeed = GetCharacterMovement()->MaxWalkSpeed;
 }
-
+#pragma endregion Constructor
 
 /** 게임 시작 처리 */
 // Called when the game starts or when spawned
@@ -84,6 +87,7 @@ void AShooterCharacter::BeginPlay()
 	PlayerController = Cast<AShooterPlayerController>(GetController());
 }
 
+#pragma region CharacterActions
 
 /** 캐릭터 액션 처리 */
 // Crouch 상태를 처리 (프레임마다 체크하기 위해 Tick()에서 호출)
@@ -124,8 +128,10 @@ void AShooterCharacter::ExecuteCrouch(float DeltaTime)
 				InterpingCrouchHeight));
 	}
 }
+#pragma endregion CharacterActions
 
 
+#pragma region Inputs
 /** 캐릭터 제어 입력 처리 */
 // 플레이어의 입력에 따라 캐릭터의 이동 방향을 설정.
 void AShooterCharacter::Move(const FInputActionValue& Value)
@@ -154,20 +160,27 @@ void AShooterCharacter::Lookup(const FInputActionValue& Value)
 // 플레이어의 입력에 의해 점프 실행.
 void AShooterCharacter::BeginJump()
 {
-	// 캐릭터가 Jump 상태가 아니고, 공중에 떠 있지 않다면,
-	// 액션 상태를 JUMP로 변경하고 점프를 실행한다.
-	if (ActionState != ECharacterActionState::ECAS_JUMP && !GetCharacterMovement()->IsFalling())
+	// 캐릭터가 Jump 상태가 아니라면,액션 상태를 JUMP로 변경하고 점프를 실행한다.
+	if (ActionState != ECharacterActionState::ECAS_JUMP)
 	{
 		ActionState = ECharacterActionState::ECAS_JUMP;
 		Jump();
 	}
 }
 
-void AShooterCharacter::EndJump()
+void AShooterCharacter::Landing()
 {
-	// 점프를 중지하고, 액션 상태를 IDLE로 변경한다.	
-	StopJumping();
-	ActionState = ECharacterActionState::ECAS_IDLE;
+	// 캐릭터의 액션 상태가 JUMP라면, 점프를 중지한다.
+	if (ActionState == ECharacterActionState::ECAS_JUMP)
+	{
+		StopJumping();	
+	}	
+}
+
+void AShooterCharacter::EndJump()
+{	
+	// 캐릭터가 점프 후 지면에 도달하면, 액션 상태를 IDLE로 변경한다.
+	ActionState = ECharacterActionState::ECAS_IDLE;	
 }
 
 // 웅크리기 입력에 따른 액션 상태를 전환.
@@ -196,6 +209,13 @@ void AShooterCharacter::ChangeActionByCrouch()
 // 질주 입력 유지에 의해 액션 실행.
 void AShooterCharacter::BeginSprint()
 {
+	if (ActionState == ECharacterActionState::ECAS_JUMP ||
+		ActionState == ECharacterActionState::ECAS_CROUCH)
+	{
+		// 캐릭터의 액션 상태가 JUMP 또는 LAND 또는 CROUCH라면 질주 블가.
+		return;
+	}
+	
 	// 캐릭터의 액션 상태를 SPRINT로 변경.
 	ActionState = ECharacterActionState::ECAS_SPRINT;
 
@@ -206,12 +226,16 @@ void AShooterCharacter::BeginSprint()
 // 질주 입력 해제에 의해 액션 종료.
 void AShooterCharacter::EndSprint()
 {
-	// 캐릭터의 액션 상태를 IDLE로 변경.
-	ActionState = ECharacterActionState::ECAS_IDLE;
+	if (ActionState == ECharacterActionState::ECAS_SPRINT)
+	{
+		// 캐릭터의 액션 상태를 IDLE로 변경.
+		ActionState = ECharacterActionState::ECAS_IDLE;
 
-	// 캐릭터의 최대 이동 속도 복원.
-	GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+		// 캐릭터의 최대 이동 속도 복원.
+		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+	}	
 }
+#pragma endregion Inputs
 
 
 /** 게임 업데이트 처리 */
@@ -222,6 +246,12 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	// 보간을 사용해 카메라의 높이를 변경.
 	ExecuteCrouch(DeltaTime);
+
+	// 캐릭터가 점프 후 지면에 도달하면, 액션 상태를 변경.
+	if (ActionState == ECharacterActionState::ECAS_JUMP && !GetCharacterMovement()->IsFalling())
+	{
+		EndJump();
+	}
 }
 
 
@@ -265,7 +295,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 				ShooterController->GetJumpAction(),
 				ETriggerEvent::Completed,
 				this,
-				&AShooterCharacter::EndJump);			
+				&AShooterCharacter::Landing);			
 
 			// 웅크리기 액션 입력
 			EnhancedInputComponent->BindAction(

@@ -93,6 +93,9 @@ protected:
 	void BeginJump();
 
 	// 점프 액션 종료 처리.
+	void Landing();
+
+	// 점프 상태 종료 이후 액션 상태 변경 처리.
 	void EndJump();
 
 	// 웅크리기 실행 여부에 액션 상태 처리.

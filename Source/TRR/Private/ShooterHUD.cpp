@@ -91,5 +91,6 @@ void AShooterHUD::DrawHUD()
 		AddActionState(L"Action State: ", Character->GetActionState());
 		AddFloat(L"Character Height: ", Character->GetShooterCamera()->GetRelativeLocation().Z);
 		AddFloat(L"Move Speed: ", Character->GetCharacterMovement()->MaxWalkSpeed);
+		AddBool(L"IsFalling? ", Character->GetCharacterMovement()->IsFalling());
 	}
 }
