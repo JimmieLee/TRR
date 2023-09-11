@@ -14,6 +14,7 @@
 // 유틸리티 포함.
 #include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
+#include "Kismet/GameplayStatics.h"
 
 // 향상된 입력 포함.
 #include "EnhancedInputComponent.h"
@@ -128,6 +129,53 @@ void AShooterCharacter::ExecuteCrouch(float DeltaTime)
 				InterpingCrouchHeight));
 	}
 }
+
+// 캐릭터의 질수 상태에 따른 스태미너의 증가와 감소 처리. (프레임마다 체크하기 위해 Tick()에서 호출)
+void AShooterCharacter::ExecuteStamina(float DeltaTime)
+{
+	// 캐릭터의 상태가 Sprint라면	
+	// 스태미너 총량이 0이하일 경우, 스태미너를 0으로 고정. (0이하로 감소 방지.
+	// 스태미너 총량이 0이하일 경우, 질주 액션 종료.
+	// 스태미너 총량이 0이상일 경우, 스태미너의 총량에서 감소량만큼 감산
+	if (ActionState == ECharacterActionState::ECAS_SPRINT)
+	{				
+		if (Stamina <= 0)
+		{
+			RestoreStaminaCooldown = 2.0f;
+			Stamina = 0.0f;
+			EndSprint();
+		}
+		else
+		{
+			RestoreStaminaCooldown = 0.0f;
+			Stamina -= ReductionStamina;
+		}
+	}
+
+	// 캐릭터의 상태가 Sprint가 아니라면, 회복 시작 대기 시간이 0인지 체크하고, 0이 라면.
+	// 스태미너가 100이상이 될 경우, 스태미너를 100으로 고정 (100이상 증가 감지)
+	// 스태미너가 100보다 작은 경우, 현재 스태미너의 양에 회복량만큼 합산.	
+	// 회복 대기 시간이 0이 아니면, 회복 대기 시간을 감소.
+	if (ActionState != ECharacterActionState::ECAS_SPRINT)
+	{
+		if (RestoreStaminaCooldown <= 0.0f)
+		{			
+			if (Stamina >= 100.0f)
+			{
+				Stamina = 100.0f;
+			}
+			else
+			{
+				Stamina += RestoreStamina;
+			}
+		}
+		else
+		{
+			RestoreStaminaCooldown -= UGameplayStatics::GetWorldDeltaSeconds(GetWorld());
+		}
+	}
+}
+
 #pragma endregion CharacterActions
 
 
@@ -193,6 +241,9 @@ void AShooterCharacter::ChangeActionByCrouch()
 		// 캐릭터의 액션 상태를 CROUCH로 변경.
 		ActionState = ECharacterActionState::ECAS_CROUCH;
 
+		// 캐릭터의 최대 이동 속도 감소.
+		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed * 0.5f;
+
 		// 캐릭터 캡슐 컴포넌트의 크기를 줄인다.
 		GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 0.5f);
 	}
@@ -203,6 +254,9 @@ void AShooterCharacter::ChangeActionByCrouch()
 
 		// 캐릭터가 웅크리기 상태인 경우, 대기 상태로 전환.
 		ActionState = ECharacterActionState::ECAS_IDLE;
+
+		// 캐릭터의 최대 이동 속도 복구
+		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
 	}	
 }
 
@@ -213,6 +267,12 @@ void AShooterCharacter::BeginSprint()
 		ActionState == ECharacterActionState::ECAS_CROUCH)
 	{
 		// 캐릭터의 액션 상태가 JUMP 또는 LAND 또는 CROUCH라면 질주 블가.
+		return;
+	}
+
+	if (Stamina <= 0.0f)
+	{
+		// 스태미너가 0이라면 질주 불가.
 		return;
 	}
 	
@@ -243,6 +303,9 @@ void AShooterCharacter::EndSprint()
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// 질주 실행 여부에 따라 스태미너 관라.
+	ExecuteStamina(DeltaTime);
 
 	// 보간을 사용해 카메라의 높이를 변경.
 	ExecuteCrouch(DeltaTime);

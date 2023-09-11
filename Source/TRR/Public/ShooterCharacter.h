@@ -33,6 +33,7 @@ public:
 	AShooterCharacter();
 
 private:
+#pragma region Components
 	/** 컴포넌트 */
 	// 플레이 카메라 컴포넌트 (cpp에서 생성)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
@@ -42,6 +43,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* ShooterMesh;
 
+#pragma endregion
+
+#pragma region Action Properties
 	/** 캐릭터 액션 */
 	// 캐릭터 액션 상태 (기본 값은 IDLE)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
@@ -71,18 +75,42 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
 	float Stamina = 100.0f;
 
+	// 지구력 감소량 (프레임 당)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float ReductionStamina = 0.2f;
+
+	// 지구력 회복량 (프레임 당)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float RestoreStamina = 0.25f;
+
+	// 스태미너 회복 시작까지의 대기 시간.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
+	float RestoreStaminaCooldown = 0.0f;
+
+#pragma endregion
+
+#pragma region Controller
 	/** 캐릭터 컨트롤러 */
 	// 플레이어 컨트롤러
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller", meta = (AllowPrivateAccess = "true"))
 	AShooterPlayerController* PlayerController;
 
+#pragma endregion
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+#pragma region Action Functions
 	// Crouch 상태 변화에 따른 카메라 높이의 전환.
-	void ExecuteCrouch(float DeltaTime);		
+	void ExecuteCrouch(float DeltaTime);	
 
+	// Sprint 여부에 따른 지구력(Statmina) 관리.
+	void ExecuteStamina(float DeltaTime);
+
+#pragma endregion
+
+#pragma region Input Functions
 	// 이동 입력 처리
 	void Move(const FInputActionValue& Value);
 
@@ -106,11 +134,15 @@ protected:
 
 	// 질주 액션 종료 처리.
 	void EndSprint();
+#pragma endregion
 	
 public:	
-	// 외부클래스에서 접근할 수 있는 멤버 변수 인라인 함수.
+#pragma region FORCEINLINE Functions
+	// private 멤버 변수에 외부클래스에서 접근할 수 있는 인라인 함수.
 	FORCEINLINE UCameraComponent* GetShooterCamera() const { return ShooterCamera; }
 	FORCEINLINE ECharacterActionState GetActionState() const { return ActionState; }
+	FORCEINLINE float GetStamina() const { return Stamina; }
+#pragma endregion
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
