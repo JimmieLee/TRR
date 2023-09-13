@@ -34,7 +34,6 @@ public:
 
 private:
 #pragma region Components
-	/** 컴포넌트 */
 	// 플레이 카메라 컴포넌트 (cpp에서 생성)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* ShooterCamera;
@@ -83,7 +82,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
 	float RestoreStamina = 0.25f;
 
-	// 스태미너 회복 시작까지의 대기 시간.
+	// 지구력 회복 시작까지의 대기 시간.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
 	float RestoreStaminaCooldown = 0.0f;
 
@@ -108,7 +107,11 @@ protected:
 	// Sprint 여부에 따른 지구력(Statmina) 관리.
 	void ExecuteStamina(float DeltaTime);
 
+	// Dash Timer 종료 시에 Action State 변경을 처리하는 Callback
+	void FinishDashTimer();
+
 #pragma endregion
+
 
 #pragma region Input Functions
 	// 이동 입력 처리

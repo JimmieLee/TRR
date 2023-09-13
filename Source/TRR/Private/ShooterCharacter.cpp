@@ -15,6 +15,7 @@
 #include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 // 향상된 입력 포함.
 #include "EnhancedInputComponent.h"
@@ -28,7 +29,6 @@
 
 #pragma region Constructor
 
-/** 클래스 생성자 */
 // Sets default values
 AShooterCharacter::AShooterCharacter()
 {
@@ -36,7 +36,7 @@ AShooterCharacter::AShooterCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	/** 컴포넌트 서브클래스 생성 */
-	// 플레이 카메라 서브클래스 생성. (액터 및 블루프린트에 노출)
+	// 플레이 카메라 서브클래스 생성.
 	ShooterCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
 	if (ShooterCamera)
 	{
@@ -48,7 +48,7 @@ AShooterCharacter::AShooterCharacter()
 		ShooterCamera->bUsePawnControlRotation = true;
 	}
 
-	// 1인칭 스켈렉탈 매시 서브클래스 생성. (액터 및 블루프린트에 노출)
+	// 1인칭 스켈렉탈 매시 서브클래스 생성.
 	ShooterMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("First Person Body"));
 	if (ShooterMesh)
 	{
@@ -234,7 +234,7 @@ void AShooterCharacter::EndJump()
 // 웅크리기 입력에 따른 액션 상태를 전환.
 void AShooterCharacter::ChangeActionByCrouch()
 {
-	// 캐릭터가 웅크리기 상태가 아니고, 점프 상태가 아니어야 웅크리기 가능.
+	// 캐릭터가 웅크리기 상태가 아니고, 점프 상태가 아니면 웅크리기 가능.
 	if (ActionState != ECharacterActionState::ECAS_CROUCH &&
 		ActionState != ECharacterActionState::ECAS_JUMP)
 	{
@@ -243,20 +243,20 @@ void AShooterCharacter::ChangeActionByCrouch()
 
 		// 캐릭터의 최대 이동 속도 감소.
 		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed * 0.5f;
-
+	
 		// 캐릭터 캡슐 컴포넌트의 크기를 줄인다.
 		GetCapsuleComponent()->SetCapsuleHalfHeight(GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 0.5f);
 	}
 	else
 	{
-		// 캐릭터 캡슐 컴포넌트의 크기를 복원.
-		GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHalfHeight);
-
 		// 캐릭터가 웅크리기 상태인 경우, 대기 상태로 전환.
-		ActionState = ECharacterActionState::ECAS_IDLE;
-
+		ActionState = ECharacterActionState::ECAS_IDLE;		
+	
 		// 캐릭터의 최대 이동 속도 복구
 		GetCharacterMovement()->MaxWalkSpeed = MaxMoveSpeed;
+
+		// 캐릭터 캡슐 컴포넌트의 크기를 복원.
+		GetCapsuleComponent()->SetCapsuleHalfHeight(CapsuleHalfHeight);
 	}	
 }
 
@@ -382,4 +382,5 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		}
 	}
 }
+
 
