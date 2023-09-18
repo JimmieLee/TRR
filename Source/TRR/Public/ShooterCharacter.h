@@ -22,6 +22,7 @@
 class USkeletalMeshComponent;
 class UCameraComponent;
 class AShooterPlayerController;
+class AShooterItem;
 
 UCLASS()
 class TRR_API AShooterCharacter : public ACharacter
@@ -112,7 +113,6 @@ protected:
 
 #pragma endregion
 
-
 #pragma region Input Functions
 	// ¿Ãµø ¿‘∑¬ √≥∏Æ
 	void Move(const FInputActionValue& Value);
@@ -146,6 +146,9 @@ public:
 	FORCEINLINE ECharacterActionState GetActionState() const { return ActionState; }
 	FORCEINLINE float GetStamina() const { return Stamina; }
 #pragma endregion
+
+	// ¡¢√À«— æ∆¿Ã≈€¿ª »πµÊ.
+	void PickUpItem(AShooterItem* Item);
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

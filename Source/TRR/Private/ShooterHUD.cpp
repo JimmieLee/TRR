@@ -3,6 +3,7 @@
 // 커스텀 클래스 포함.
 #include "ShooterHUD.h"
 #include "ShooterCharacter.h"
+#include "ShooterItem.h"
 
 // 컴포넌트 클래스 포함.
 #include "Camera/CameraComponent.h"
@@ -93,5 +94,6 @@ void AShooterHUD::DrawHUD()
 		AddFloat(L"Move Speed: ", Character->GetCharacterMovement()->MaxWalkSpeed);
 		AddFloat(L"Stamina: ", Character->GetStamina());
 		AddBool(L"IsFalling? ", Character->GetCharacterMovement()->IsFalling());
+		
 	}
 }

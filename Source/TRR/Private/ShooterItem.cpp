@@ -14,7 +14,6 @@
  * 캐릭터가 접촉하여 획득하거나 사용하는 아이템 베이스 클래스의 CPP
 */
 
-
 #pragma region Constructor
 
 // Sets default values
@@ -25,7 +24,7 @@ AShooterItem::AShooterItem()
 
 	/** 컴포넌트 서브클래스 생성 */
 	// 아이템 메시 서브클래스 생성.
-	ShooterItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Item Body"));
+	ShooterItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Item Body"));
 	if (ShooterItemMesh)
 	{
 		// Shooter Item Mesh가 유효하면, Root Component로 설정.
@@ -79,10 +78,7 @@ void AShooterItem::CharacterBeginOverlap(
 		AShooterCharacter* Shooter = Cast<AShooterCharacter>(OtherActor);
 
 		// 캐릭터 클래스 참조를 통해서 아이템 획득 기능을 호출.
-
-
-		// DEBUG_LINE
-		UE_LOG(LogTemp, Warning, TEXT("Character is Overlapped to Item"));
+		Shooter->PickUpItem(this);
 	}
 }
 
@@ -93,8 +89,16 @@ void AShooterItem::CharacterEndOverlap(
 	UPrimitiveComponent* OtherComp, 
 	int32 OtherBodyIndex)
 {
-	// DEBUG_LINE
-	UE_LOG(LogTemp, Warning, TEXT("Character Deviates from The Item"));
+	
+}
+
+// 캐릭터가 아이템을 획득하면, 게임 월드 상의 아이템을 제거.
+void AShooterItem::DestroyItem()
+{
+	if (bCompletePickUp)
+	{
+		Destroy();
+	}
 }
 
 #pragma endregion
@@ -104,5 +108,6 @@ void AShooterItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	DestroyItem();
 }
 

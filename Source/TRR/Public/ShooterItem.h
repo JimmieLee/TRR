@@ -21,6 +21,7 @@ enum class EItemType : uint8
 {
 	EIT_NONE UMETA(DisplayName = "None"),
 	EIT_WEAPON UMETA(DisplayName = "Weapon"),
+	EIT_AMMO UMETA(DisplayName = "Ammo"),
 	EIT_KIT UMETA(DisplayName = "Kit"),
 	EIT_SUIT UMETA(DisplayName = "Suit"),
 	EIT_PART UMETA(DisplayName = "Parts")	
@@ -29,7 +30,7 @@ enum class EItemType : uint8
 #pragma endregion
 
 // 클래스 선언
-class USkeletalMeshComponent;
+class UStaticMeshComponent;
 class USphereComponent;
 class AShooterCharacter;
 
@@ -46,18 +47,26 @@ private:
 #pragma region Components
 	// 아이템 메시 컴포넌트 (cpp에서 생성)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* ShooterItemMesh;
+	UStaticMeshComponent* ShooterItemMesh;
 
 	// 캐릭터 접촉 감지를 위한 Sphere 컴포넌트 (cpp에서 생성)
-	UPROPERTY(EditAnywhere, blueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	USphereComponent* CharacterOverlapSphere;
 
 #pragma endregion
 
 #pragma region Item Properties
 	// 아이템 타입.
-	UPROPERTY(EditAnywhere, blueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	EItemType ItemType = EItemType::EIT_NONE;
+
+	// 아이템 수량
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 ItemAmount = 0;
+
+	// 획득 완료 여부.
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	bool bCompletePickUp = false;
 
 #pragma endregion
 
@@ -84,9 +93,20 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
+	// 획득이 완료되면 아이템 제거.
+	void DestroyItem();
+
 #pragma endregion
 
 public:	
+#pragma region FORCEINLINE Functions
+	// private 멤버 변수에 외부클래스에서 접근할 수 있는 인라인 함수.
+	FORCEINLINE EItemType GetItemType() const { return ItemType; }
+
+#pragma endregion
+	// 획득 완료 여부를 설정. 
+	void SetCompletedPickUpItem(bool bComplete) { bCompletePickUp = bComplete; }
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

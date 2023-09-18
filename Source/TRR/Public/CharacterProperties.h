@@ -6,6 +6,7 @@
 * 게임 플레이 상황에 따라 변화하는 캐릭터의 상태 선언.
 */
 
+#pragma region Character Action State
 UENUM(BlueprintType)
 enum class ECharacterActionState : uint8
 {
@@ -15,4 +16,6 @@ enum class ECharacterActionState : uint8
 	ECAS_SPRINT UMETA(DisplayName = "Sprint"),
 	ECAS_DASH UMETA(DisplayName = "Dash")
 };
+
+#pragma endregion
 

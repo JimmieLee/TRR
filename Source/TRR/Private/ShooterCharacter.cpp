@@ -2,6 +2,8 @@
 
 // 커스텀 클래스 포함
 #include "ShooterCharacter.h"
+#include "ShooterItem.h"
+#include "ShooterWeapon.h"
 #include "ShooterPlayerController.h"
 
 // 컴포넌트 클래스 포함.
@@ -25,7 +27,6 @@
  * 2023. 08. 29
  * 플레이어가 제어하는 캐릭터 클래스의 CPP
 */
-
 
 #pragma region Constructor
 
@@ -178,6 +179,72 @@ void AShooterCharacter::ExecuteStamina(float DeltaTime)
 
 #pragma endregion CharacterActions
 
+
+#pragma region Item
+// 아이템의 타입을 구해서, 타입 별로, 서브 아이템 클래스의 Pick Up 함수를 호출
+// 이 함수는 아이템 클래스에 의해서 호출.
+void AShooterCharacter::PickUpItem(AShooterItem* Item)
+{
+	switch (Item->GetItemType())
+	{
+	case EItemType::EIT_WEAPON:
+	{
+		// Item을 Weapon Base Class로 캐스팅.
+		// Weapon 클래스 참조를 이용해 Pick Up Weapon 함수 호출.
+		AShooterWeapon* Weapon = Cast<AShooterWeapon>(Item);
+		if (Weapon)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Pick Up Weapon is: %s"), *Weapon->GetName());
+			Weapon->PickUpWeapon(this);
+			Item->SetCompletedPickUpItem(true);
+		}		
+		break;
+	}
+
+	case EItemType::EIT_AMMO:
+	{
+		// Item을 Ammo Base Class로 캐스팅.
+		// Ammo 클래스 참조를 이용해 Pick Up Ammo 함수 호출.
+		
+		UE_LOG(LogTemp, Warning, TEXT("Pick Up Ammo"));
+		Item->SetCompletedPickUpItem(true);
+		break;
+	}
+
+	case EItemType::EIT_KIT:
+		// Item을 Kit Base Class로 캐스팅.
+		// Kit 클래스 참조를 이용해 Pick Up Kit 함수 호출.
+
+		UE_LOG(LogTemp, Warning, TEXT("Pick Up Kit"));
+		Item->SetCompletedPickUpItem(true);
+		break;
+
+	case EItemType::EIT_SUIT:
+		// Item을 Suit Class로 캐스팅.
+		// Suit 클래스 참조를 이용해 Pick Up Suit 함수 호출.
+
+		UE_LOG(LogTemp, Warning, TEXT("Pick Up Suit"));
+		Item->SetCompletedPickUpItem(true);
+		break;
+
+	case EItemType::EIT_PART:
+		// Item을 Part Base Class로 캐스팅.
+		// Parts 클래스 참조를 이용해 Pick Up Part 함수 호출.
+
+		UE_LOG(LogTemp, Warning, TEXT("Pick Up Part"));
+		Item->SetCompletedPickUpItem(true);
+		break;
+
+	case EItemType::EIT_NONE:
+		// 아이템을 픽업하지 않는다.
+
+		UE_LOG(LogTemp, Warning, TEXT("Pick Up Nothing"));
+		Item->SetCompletedPickUpItem(true);
+		break;
+	}	
+}
+
+#pragma endregion
 
 #pragma region Inputs
 /** 캐릭터 제어 입력 처리 */
