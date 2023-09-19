@@ -23,6 +23,7 @@ class USkeletalMeshComponent;
 class UCameraComponent;
 class AShooterPlayerController;
 class AShooterItem;
+class AShooterWeapon;
 
 UCLASS()
 class TRR_API AShooterCharacter : public ACharacter
@@ -50,10 +51,6 @@ private:
 	// 캐릭터 액션 상태 (기본 값은 IDLE)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
 	ECharacterActionState ActionState = ECharacterActionState::ECAS_IDLE;	
-
-	// 점프 시간 (점프 커브의 길이와 비교)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
-	float JumpingTime;
 
 	// 캐릭터의 캡슐 컴포넌트 기본 높이.
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Action Properties", meta = (AllowPrivateAccess = "true"))
@@ -88,6 +85,31 @@ private:
 	float RestoreStaminaCooldown = 0.0f;
 
 #pragma endregion
+
+#pragma region Weapon Inventory
+	// 무기 보관 공간 1. (First Slot)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Inventory", meta = (AllowPrivateAccess = "true"))
+	AShooterWeapon* PrimaryWeaponSlot;
+	// 무기 보관 공간 2. (Second Slot)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Inventory", meta = (AllowPrivateAccess = "true"))
+	AShooterWeapon* SecondaryWeaponSlot;
+	// 무기 보관 공간 3. (Third Slot)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Inventory", meta = (AllowPrivateAccess = "true"))
+	AShooterWeapon* SpecialWeaponSlot;
+	// 무기 보관 공간 4. (Forth Slot)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Inventory", meta = (AllowPrivateAccess = "true"))
+	AShooterWeapon* Special2WeaponSlot;
+	// 무기 보관 공간 5. (Fifth Slot)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Inventory", meta = (AllowPrivateAccess = "true"))
+	AShooterWeapon* Special3WeaponSlot;
+	// 무기 보관 공간 6. (SixTh Slot)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon Inventory", meta = (AllowPrivateAccess = "true"))
+	AShooterWeapon* Special4WeaponSlot;
+
+#pragma endregion
+
+	// 획득한 아이템을 임시로 저장. (아이템 획득 후, 게임 월드에서 제거하기 위해)
+	AShooterItem* ItemTemp;
 
 #pragma region Controller
 	/** 캐릭터 컨트롤러 */
@@ -145,10 +167,14 @@ public:
 	FORCEINLINE UCameraComponent* GetShooterCamera() const { return ShooterCamera; }
 	FORCEINLINE ECharacterActionState GetActionState() const { return ActionState; }
 	FORCEINLINE float GetStamina() const { return Stamina; }
+
 #pragma endregion
 
 	// 접촉한 아이템을 획득.
 	void PickUpItem(AShooterItem* Item);
+
+	// 획득한 무기를 슬롯에 보관.
+	void AddWeaponToSlot(AShooterWeapon* Weapon);
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

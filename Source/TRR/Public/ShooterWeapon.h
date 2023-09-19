@@ -32,6 +32,9 @@ struct FWeaponProperty
 
 	UPROPERTY(EditAnywhere)
 	EShotType ShotType;
+
+	UPROPERTY(EditAnywhere)
+	ESlotType SlotType;
 	
 	UPROPERTY(EditAnywhere)
 	int32 MagazineSize;
@@ -76,6 +79,13 @@ protected:
 
 
 public:
+#pragma region FORCEINLINE Functions
+	// private 멤버 변수에 외부 클래스에서 접근할 수 있는 인라인 함수.
+	// Weapon Property를 외부 클래스에서 접근.
+	FORCEINLINE FWeaponProperty GetWeaponProperty() const { return WeaponProperty; }
+	
+#pragma endregion
+
 	// 무기를 획득.
 	void PickUpWeapon(class AShooterCharacter* Shooter);
 

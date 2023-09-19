@@ -185,6 +185,9 @@ void AShooterCharacter::ExecuteStamina(float DeltaTime)
 // 이 함수는 아이템 클래스에 의해서 호출.
 void AShooterCharacter::PickUpItem(AShooterItem* Item)
 {
+	// 무기 획득 완료 후, 게임 월드 상에 배치된 인스턴스를 제거하기 위해, 임시로 저장.
+	ItemTemp = Item;
+	
 	switch (Item->GetItemType())
 	{
 	case EItemType::EIT_WEAPON:
@@ -195,8 +198,7 @@ void AShooterCharacter::PickUpItem(AShooterItem* Item)
 		if (Weapon)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Pick Up Weapon is: %s"), *Weapon->GetName());
-			Weapon->PickUpWeapon(this);
-			Item->SetCompletedPickUpItem(true);
+			Weapon->PickUpWeapon(this);			
 		}		
 		break;
 	}
@@ -242,6 +244,103 @@ void AShooterCharacter::PickUpItem(AShooterItem* Item)
 		Item->SetCompletedPickUpItem(true);
 		break;
 	}	
+}
+
+// 무기를 획득했을 때, 무기의 보관 공간이 비어있다면 호출. (ShooterWeapon 클래스에서)
+void AShooterCharacter::AddWeaponToSlot(AShooterWeapon* Weapon)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Add Weapon To Slot"));
+	// 무기의 Property 중, Slot Type으로 무기가 보관할 공간을 구분.
+	// Slot Type에 적합한 무기 슬롯이 비어 있으면, 무기를 등록.
+	// 등록이 완료되면, 저장한 아이템 임시 인스턴스를 제거.
+	switch (Weapon->GetWeaponProperty().SlotType)
+	{
+	case ESlotType::ESLT_Primary:
+	{
+		if (PrimaryWeaponSlot == nullptr)
+		{			
+			PrimaryWeaponSlot = Weapon;
+			UE_LOG(LogTemp, Warning, TEXT("Primary Weapon Add: %s"), *PrimaryWeaponSlot->GetName());
+			ItemTemp->SetCompletedPickUpItem(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Has Aleady Weapon"));
+		}
+		break;
+	}
+	case ESlotType::ESLT_Secondary:
+	{
+		if (SecondaryWeaponSlot == nullptr)
+		{
+			SecondaryWeaponSlot = Weapon;
+			UE_LOG(LogTemp, Warning, TEXT("Secondary Weapon Add: %s"), *SecondaryWeaponSlot->GetName());
+			ItemTemp->SetCompletedPickUpItem(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Has Aleady Weapon"));
+		}
+		break;
+	}
+	case ESlotType::ESLT_Special:
+	{
+		if (SpecialWeaponSlot == nullptr)
+		{
+			SpecialWeaponSlot = Weapon;
+			UE_LOG(LogTemp, Warning, TEXT("Special Weapon Add: %s"), *SpecialWeaponSlot->GetName());
+			ItemTemp->SetCompletedPickUpItem(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Has Aleady Weapon"));
+		}
+		break;
+	}
+	case ESlotType::ESLT_Special2:
+	{
+		if (Special2WeaponSlot == nullptr)
+		{
+			Special2WeaponSlot = Weapon;
+			UE_LOG(LogTemp, Warning, TEXT("Special2 Weapon Add: %s"), *Special2WeaponSlot->GetName());
+			ItemTemp->SetCompletedPickUpItem(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Has Aleady Weapon"));
+		}
+		break;
+	}
+	case ESlotType::ESLT_Special3:
+	{
+		if (Special3WeaponSlot == nullptr)
+		{
+			Special3WeaponSlot = Weapon;
+			UE_LOG(LogTemp, Warning, TEXT("Special3 Weapon Add: %s"), *Special3WeaponSlot->GetName());
+			ItemTemp->SetCompletedPickUpItem(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Has Aleady Weapon"));
+		}
+		break;
+	}
+	case ESlotType::ESLT_Special4:
+	{
+		if (Special4WeaponSlot == nullptr)
+		{
+			Special4WeaponSlot = Weapon;
+			UE_LOG(LogTemp, Warning, TEXT("Special4 Weapon Add: %s"), *Special4WeaponSlot->GetName());
+			ItemTemp->SetCompletedPickUpItem(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Has Aleady Weapon"));
+		}
+		break;
+	}
+
+	}
 }
 
 #pragma endregion

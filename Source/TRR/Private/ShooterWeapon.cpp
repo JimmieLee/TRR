@@ -33,7 +33,8 @@ void AShooterWeapon::PickUpWeapon(AShooterCharacter* Shooter)
 {
 	if (Shooter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Picking Weapon!"));
+		// 캐릭터 클래스를 통해서 무기 슬롯에 무기를 등록.
+		Shooter->AddWeaponToSlot(this);
 	}	
 }
 

@@ -38,6 +38,7 @@ enum class EShotType : uint8
 };
 
 // 무기 보관 공간.
+UENUM(BlueprintType)
 enum class ESlotType : uint8
 {
 	ESLT_Primary UMETA(DisplayName = "First Slot"),
