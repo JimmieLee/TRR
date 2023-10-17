@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ShooterItem.h"
-#include "WeaponProperties.h"
+#include "CommonTypes.h"
 
 // 항상 마지막에 포함.
 #include "ShooterWeapon.generated.h"

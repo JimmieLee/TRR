@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "CommonTypes.h"
 
 // 항상 마지막에 포함.
 #include "ShooterItem.generated.h"
@@ -13,21 +14,6 @@
  * 2023. 09. 13
  * 캐릭터가 접촉하여 획득하거나 사용하는 아이템 베이스 클래스의 헤더
 */
-
-#pragma region Enum Class
-// 아이템의 구분.
-UENUM(BlueprintType)
-enum class EItemType : uint8
-{
-	EIT_NONE UMETA(DisplayName = "None"),
-	EIT_WEAPON UMETA(DisplayName = "Weapon"),
-	EIT_AMMO UMETA(DisplayName = "Ammo"),
-	EIT_KIT UMETA(DisplayName = "Kit"),
-	EIT_SUIT UMETA(DisplayName = "Suit"),
-	EIT_PART UMETA(DisplayName = "Parts")	
-};
-
-#pragma endregion
 
 // 클래스 선언
 class UStaticMeshComponent;

@@ -6,7 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "Engine/Canvas.h"
 #include "CanvasItem.h"
-#include "CharacterProperties.h"
+#include "CommonTypes.h"
 
 // 항상 마지막에 포함
 #include "ShooterHUD.generated.h"

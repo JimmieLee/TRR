@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "CharacterProperties.h"
+#include "CommonTypes.h"
 
 // 항상 마지막에 포함
 #include "ShooterPlayerAnimInstance.generated.h"

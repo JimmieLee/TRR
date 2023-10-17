@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "CharacterProperties.h"
+#include "CommonTypes.h"
 
 // 향상된 입력 포함.
 #include "InputActionValue.h"
